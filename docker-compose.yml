@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+    Test:
+        image: kooldev/php:8.1
+        container_name: Test
+        working_dir: /Test
+        restart: always
+        networks:
+            - internal
+            - nginx_network
+        volumes:
+            - '.:/Test'
+            - './docker/php/php-ini-overrides.ini:/etc/php/8.1/fpm/conf.d/99-overrides.ini'
+        links:
+            - Test-database
+        depends_on:
+            - Test-database
+    Test-nginx:
+        image: nginx:alpine
+        container_name: Test-nginx
+        restart: always
+        working_dir: /Test
+        networks:
+            - internal
+            - nginx_network
+        ports:
+            - "9002:80"
+        volumes:
+            - .:/Test
+            - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - Test
+    Test-composer:
+        image: composer:latest
+        container_name: Test-composer
+        working_dir: /Test
+        command: update --ignore-platform-reqs
+        volumes:
+            - .:/Test
+        restart: on-failure
+        depends_on:
+            - Test
+    Test-database:
+        image: mariadb:latest
+        restart: always
+        container_name: Test-database
+        working_dir: /Test
+        networks:
+            - internal
+            - nginx_network
+        environment:
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_DATABASE=test
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=password
+        volumes:
+            - .:/Test
+            - ./Test-database:/var/lib/mysql
+        ports:
+            - '6000:3306'
+networks:
+    nginx_network:
+        external: true
+    internal:
+        driver: overlay
+        name: 'global'
+        attachable: true
+volumes:
+    Test-database:
+        driver: local
