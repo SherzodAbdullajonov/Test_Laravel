@@ -25,17 +25,17 @@ class WarehouseSeeder extends Seeder
                 'price' => 1600.00,
             ],
             [
-                'material_id' => 2, // Ip
+                'material_id' => 3, // Ip
                 'remainder' => 40,
                 'price' => 500.00,
             ],
             [
-                'material_id' => 2, // Ip
+                'material_id' => 3, // Ip
                 'remainder' => 260,
                 'price' => 550.00,
             ],
             [
-                'material_id' => 3, // Tugma
+                'material_id' => 2, // Tugma
                 'remainder' => 150,
                 'price' => 300.00,
             ],
