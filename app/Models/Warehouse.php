@@ -9,7 +9,9 @@ class Warehouse extends Model
 {
     use HasFactory;
     protected $fillable = ['material_id', 'remainder', 'price'];
-
+    protected $casts = [
+        'price' => 'float',
+    ];
     public function rawMaterial()
     {
         return $this->belongsTo(RawMaterial::class, 'material_id');
