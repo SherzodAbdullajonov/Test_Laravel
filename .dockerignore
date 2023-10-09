@@ -1,0 +1,12 @@
+.git
+.env
+.env.example
+.dockerignore
+composer.json
+composer.lock
+/storage/framework/*
+/storage/logs/*
+/public/storage
+/public/hot
+/storage/*.key
+/vendor
