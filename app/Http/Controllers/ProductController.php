@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Services\ProductService;
 
 class ProductController extends Controller
@@ -15,48 +14,57 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
+
     public function getProducts()
     {
-        // Define the product requirements
+        // Define the product requirements grouped by product name
         $productRequirements = [
-            [
-                'product_name' => 'Koylak',
-                'quantity' => 30,
-            ],
-            [
-                'product_name' => 'Shim',
-                'quantity' => 20,
-            ],
+            'Koylak' => 30,
+            'Shim' => 20,
         ];
 
         $result = [];
 
-        foreach ($productRequirements as $requirement) {
+        foreach ($productRequirements as $productName => $quantity) {
             // Find the product by name
-            $product = Product::where('product_name', $requirement['product_name'])->first();
+            $product = Product::where('product_name', $productName)->first();
 
-            // Check if the product exists
             if (!$product) {
                 return response()->json(['error' => 'Product not found'], 404);
             }
 
-            $quantity = $requirement['quantity'];
-
             // Calculate raw material requirements for the product
             $materials = $this->productService->calculateRawMaterialRequirements($product, $quantity);
 
-            // Construct the product details array
-            $productDetails = [
-                'product_name' => $product->product_name,
-                'product_qty' => $quantity,
-                'product_materials' => $materials,
-            ];
+            // Calculate the total available quantity of raw materials
+            $availableRawMaterials = $this->productService->getAvailableQuantity($product);
 
-            // Add the product details to the result array
-            $result[] = $productDetails;
+            // Calculate the total required quantity for the product
+            $requiredQuantity = $quantity * count($materials);
 
-            // Allocate raw materials for the requested quantity of the product
-            $this->productService->allocateRawMaterials($product, $quantity);
+            // Check if there are enough raw materials
+            if ($availableRawMaterials >= $requiredQuantity) {
+                $this->productService->allocateRawMaterials($product, $quantity);
+
+                $productDetails = [
+                    'product_name' => $productName,
+                    'product_qty' => $quantity,
+                    'product_materials' => $materials,
+                ];
+
+                $result[] = $productDetails;
+            } else {
+                // Calculate the shortage of raw materials
+                $shortage = $requiredQuantity - $availableRawMaterials;
+
+                $productShortage = [
+                    'product_name' => $productName,
+                    'product_qty' => $quantity,
+                    'shortage_qty' => $shortage,
+                ];
+
+                $result[] = $productShortage;
+            }
         }
 
         return response()->json(['result' => $result]);

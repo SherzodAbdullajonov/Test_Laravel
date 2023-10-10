@@ -14,8 +14,8 @@ start: ## Start containers.
 stop: ## Stop containers.
 	@docker compose down
 
-# migrate: ## Migrate database migrations inside Docker container.
-# 	@docker exec -it Test php artisan migrate
+migrate: ## Migrate database migrations inside Docker container.
+	@docker exec -it Test php artisan migrate
 
-# test-db: ## Migrate database migrations and seed data inside Docker container.
-# 	@docker exec -it Test php artisan migrate --seed
+test-db: ## Migrate database migrations and seed data inside Docker container.
+	@docker exec -it Test php artisan migrate --seed

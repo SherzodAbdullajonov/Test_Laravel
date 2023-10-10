@@ -1,11 +1,11 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\MaterialAllocation;
 use App\Models\Product;
+use App\Models\RawMaterial;
+use App\Models\MaterialAllocation;
 
 
 class ProductService
@@ -59,17 +59,35 @@ class ProductService
             ->sum('quantity');
     }
 
-    private function getAvailableQuantity($rawMaterial)
+    public function getAvailableQuantity($item)
     {
-        $warehouses = $rawMaterial->warehouses;
+        if ($item instanceof Product) {
+            // Calculate available quantity for a product
+            $rawMaterials = $item->rawMaterials;
+            $availableQuantity = 0;
 
-        $availableQuantity = 0;
+            foreach ($rawMaterials as $rawMaterial) {
+                $warehouses = $rawMaterial->warehouses;
 
-        foreach ($warehouses as $warehouse) {
-            $availableQuantity += $warehouse->remainder;
+                foreach ($warehouses as $warehouse) {
+                    $availableQuantity += $warehouse->remainder;
+                }
+            }
+
+            return $availableQuantity;
+        } elseif ($item instanceof RawMaterial) {
+            // Calculate available quantity for a raw material
+            $warehouses = $item->warehouses;
+            $availableQuantity = 0;
+
+            foreach ($warehouses as $warehouse) {
+                $availableQuantity += $warehouse->remainder;
+            }
+
+            return $availableQuantity;
         }
 
-        return $availableQuantity;
+        return 0;
     }
 
     public function allocateRawMaterials(Product $product, $quantity)
